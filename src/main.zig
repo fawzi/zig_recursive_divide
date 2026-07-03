@@ -23,22 +23,29 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
     var arena_allocator = std.heap.ArenaAllocator.init(allocator);
     defer arena_allocator.deinit();
     const arena: std.mem.Allocator = arena_allocator.allocator();
-        
+
     // Accessing command line arguments:
     const help =
         \\ -h --help          print this description
         \\ --io[=]<impl>      Uses the given io implementation (threaded|evented)
         \\ --seed[=]<seed>    Uses the given seed for the random number gereators
-        \\ --work[=]<amount>  Sets the amount of work to do to <amount>. The work
+        \\ --pwork[=]<amount> Sets the amount of parallel work to do to <amount>. The work
         \\                    is performed subdividing with a divide and conquer schema
         \\                    halving it until it is small enough (a single number in
         \\                    this case)
+        \\ --swork[=]<amount> Sets the sequential amount of work to do to <amount>.
+        \\                    The work is the number of rng to xor together
+        \\                    (defaults to 1000)
+        \\ --wait[=<ms>]      Waits for the requested number of seconds in the leaf work
+        \\                    tasks
     ;
     const args = try minimal.args.toSlice(arena);
     var iarg: usize = 1;
     var io_impl: IoImplementation = .threaded;
     var seed: ?u64 = null;
-    var work: u64 = 0;
+    var pwork: u64 = 0;
+    var swork: u64 = 100000;
+    var wait_ms: u64 = 0;
     while (iarg < args.len) {
         const arg = args[iarg];
         const splitPos: usize = std.mem.findScalar(u8, arg, '=') orelse arg.len;
@@ -71,16 +78,29 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
                 break :blk args[iarg];
             };
             seed = try std.fmt.parseUnsigned(u64, seed_str, 10);
-        } else if (std.ascii.eqlIgnoreCase(core_arg, "--work")) {
+        } else if (std.ascii.eqlIgnoreCase(core_arg, "--pwork")) {
             const str_val = if (splitPos < arg.len) arg[splitPos + 1 .. arg.len] else blk: {
                 iarg += 1;
                 if (iarg >= args.len) {
-                    log.err("Error: expected argument after --seed\n", .{});
+                    log.err("Error: expected argument after --pwork\n", .{});
                     std.process.exit(2);
                 }
                 break :blk args[iarg];
             };
-            work = try std.fmt.parseUnsigned(u64, str_val, 10);
+            pwork = try std.fmt.parseUnsigned(u64, str_val, 10);
+        } else if (std.ascii.eqlIgnoreCase(core_arg, "--swork")) {
+            const str_val = if (splitPos < arg.len) arg[splitPos + 1 .. arg.len] else blk: {
+                iarg += 1;
+                if (iarg >= args.len) {
+                    log.err("Error: expected argument after --swork\n", .{});
+                    std.process.exit(2);
+                }
+                break :blk args[iarg];
+            };
+            swork = try std.fmt.parseUnsigned(u64, str_val, 10);
+        } else if (std.ascii.eqlIgnoreCase(core_arg, "--wait")) {
+            const str_val: ?[]const u8 = if (splitPos < arg.len) arg[splitPos + 1 .. arg.len] else null;
+            wait_ms = if (str_val) |v| try std.fmt.parseUnsigned(u64, v, 10) else 1000;
         } else {
             log.err("Error: Unknown argument {} ('{s}').\n\n{s}\n{s}\n", .{ iarg, args[iarg], std.fs.path.basename(args[0]), help });
             std.process.exit(1);
@@ -88,7 +108,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
         iarg += 1;
     }
     var threaded: std.Io.Threaded = undefined;
-    //var evented: std.Io.Evented = undefined;
+    var evented: std.Io.Evented = undefined;
     const io = switch (io_impl) {
         .threaded => blk1: {
             threaded = .init(allocator, .{
@@ -97,24 +117,18 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
             });
             break :blk1 threaded.io();
         },
-        .evented => { // blk2: {
-            //try evented.init(allocator, .{
-            //    .argv0 = .init(minimal.args),
-            //    .environ = minimal.environ,
-            //    .backing_allocator_needs_mutex = false,
-            //});
-            //break :blk2 evented.io();
-            return error.Failure;
+        .evented => blk2: {
+            try evented.init(allocator, .{
+                .argv0 = .init(minimal.args),
+                .environ = minimal.environ,
+                .backing_allocator_needs_mutex = false,
+            });
+            break :blk2 evented.io();
         },
     };
     defer switch (io_impl) {
         .threaded => threaded.deinit(),
-        .evented => switch (builtin.os.tag) {
-            .driverkit, .ios, .maccatalyst, .macos, .tvos, .visionos, .watchos, .linux => {},
-            // deint triggers a compilation bug on macos with zig 0.16.0 see
-            // https://codeberg.org/ziglang/zig/commit/4d5721214f31684e3bed3624878d8903fabe8e39
-            else => {}, //evented.deinit(),
-        },
+        .evented => evented.deinit(),
     };
     var buf1: [256]u8 = undefined;
     var stderr_w = Io.File.stderr().writer(io, &buf1);
@@ -127,30 +141,39 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
     try stdout.writeByte('[');
     try stderr.writeByte('\n');
     try stderr.flush();
-    var c_env: recursive_divide.CalcEnv = .{};
-    const res = try c_env.calc(io, allocator, seed orelse 0, work);
-    const bits_work0: u6 = @intCast(63 - @clz(work));
-    const bits_work: u6 = if (work == (@as(u64,1) << bits_work0)) bits_work0 + 1 else bits_work0 + 2;
+    var c_env: recursive_divide.CalcEnv = .{
+        .work_per_block = swork,
+        .wait_ms = wait_ms,
+    };
+    const res = try c_env.calc(io, allocator, seed orelse 0, pwork);
+    const bits_work0: u6 = @intCast(63 - @clz(pwork));
+    const bits_work: u6 = if (pwork == (@as(u64, 1) << bits_work0)) bits_work0 + 1 else bits_work0 + 2;
     const ncpu: u64 = try std.Thread.getCpuCount();
     const bit_ncpu0: u6 = @intCast(63 - @clz(ncpu));
     const bit_ncpu1: u6 = if ((@as(u64, 1) << bit_ncpu0) != ncpu) bit_ncpu0 + 2 else bit_ncpu0 + 1;
     const ideal_in_flight_max: u64 = if (bits_work > bit_ncpu1)
-                        (bits_work - bit_ncpu1+1)*ncpu else @min(work,2*ncpu);
-    const core_tree: u64 = work >> 1;
+        (bits_work - bit_ncpu1 + 1) * ncpu
+    else
+        @min(pwork, 2 * ncpu);
+    const core_tree: u64 = pwork >> 1;
     const time_ns = c_env.duration.toNanoseconds();
-    const time: f64 = @as(f64,@floatFromInt(time_ns))/@as(f64,@floatFromInt(1_000_000_000));
+    const time: f64 = @as(f64, @floatFromInt(time_ns)) / @as(f64, @floatFromInt(1_000_000_000));
+    const stime: f64 = @as(f64, @floatFromInt(c_env.seq_time_ns.load(.acquire))) / @as(f64, @floatFromInt(1_000_000_000));
     try std.json.fmt(.{
         .depth = bits_work + 1,
-        .elements = work,
+        .pwork = pwork,
+        .swork = swork,
+        .wait_ms = wait_ms,
         .core_tree = core_tree,
         .ncpu = ncpu,
         .ideal_in_flight_max = ideal_in_flight_max,
         .max_in_flight = c_env.max_in_flight.load(.acquire),
         .in_flight_now = c_env.in_flight.load(.acquire),
         .checksum = res,
-        .expected_ideal_time = work/ncpu,
         .time = time,
-    } , .{ .whitespace = .indent_2 }).format(stdout);
+        .sequential_time = stime,
+        .parallel_speedup = stime / time,
+    }, .{ .whitespace = .indent_2 }).format(stdout);
     try stdout.writeAll("]\n");
     try stdout.flush();
 }

@@ -143,8 +143,11 @@ test "SeedTree" {
 pub const CalcEnv = struct {
     in_flight: std.atomic.Value(i64) = .init(0),
     max_in_flight: std.atomic.Value(i64) = .init(0),
+    seq_time_ns: std.atomic.Value(i64) = .init(0),
     duration: std.Io.Duration = .zero,
-    
+    work_per_block: u64,
+    wait_ms: u64,
+
     pub fn calc(self: *CalcEnv, io: std.Io, allocator: std.mem.Allocator, seed: u64, blocks_to_read: u64) !u64 {
         if (blocks_to_read == 0)
             return 0
@@ -156,7 +159,7 @@ pub const CalcEnv = struct {
             self.duration = start.durationTo(end);
         }
         const depth0: u6 = @intCast(63 - @clz(blocks_to_read));
-        const more : u6 = if (blocks_to_read != (@as(u64, 1) << depth0)) 1 else 0;
+        const more: u6 = if (blocks_to_read != (@as(u64, 1) << depth0)) 1 else 0;
         const depth: u6 = depth0 + more;
         const seed_tree: SeedTree = try .init(seed, depth);
         const in_flight: i64 = self.in_flight.fetchAdd(1, .monotonic);
@@ -168,28 +171,38 @@ pub const CalcEnv = struct {
         defer {
             const in_flight: i64 = self.in_flight.fetchAdd(-1, .monotonic);
             _ = self.max_in_flight.fetchMax(in_flight, .monotonic);
-
         }
         if (blocks_to_read > 1) {
             const to_read = blocks_to_read >> 1;
             const in_flight: i64 = self.in_flight.fetchAdd(1, .monotonic);
             _ = self.max_in_flight.fetchMax(in_flight, .monotonic);
-            var f1 = io.async(calc_some, .{self, io, allocator, seed_tree, offset, to_read});
+            var f1 = io.async(calc_some, .{ self, io, allocator, seed_tree, offset, to_read });
             defer _ = f1.cancel(io) catch 0;
             const offset2: u64 = offset + to_read;
             var seed_tree2: SeedTree = seed_tree;
             _ = try seed_tree2.rngForIndex(offset2);
             const in_flight2: i64 = self.in_flight.fetchAdd(1, .monotonic);
             _ = self.max_in_flight.fetchMax(in_flight2, .monotonic);
-            var f2 = io.async(calc_some, .{self, io, allocator, seed_tree, offset2, blocks_to_read - to_read});
+            var f2 = io.async(calc_some, .{ self, io, allocator, seed_tree, offset2, blocks_to_read - to_read });
             defer _ = f2.cancel(io) catch 0;
             const r1: u64 = try f1.await(io);
-            const r2: u64 = try f2.await(io);            
+            const r2: u64 = try f2.await(io);
             return r1 ^ r2;
+        }
+        const start = std.Io.Clock.awake.now(io);
+        defer {
+            const end = std.Io.Clock.awake.now(io);
+            const duration = start.durationTo(end);
+            _ = self.seq_time_ns.fetchAdd(@intCast(duration.nanoseconds), .monotonic);
         }
         var seed_tree2: SeedTree = seed_tree;
         var rng = try seed_tree2.rngForIndex(offset);
-        try io.sleep(.fromSeconds(1), .awake);
-        return rng.next();
+        var res: u64 = 0;
+        for (0..self.work_per_block) |_| {
+            res ^= rng.next();
+        }
+        if (self.wait_ms != 0)
+            try io.sleep(.fromMilliseconds(@intCast(self.wait_ms)), .awake);
+        return res;
     }
 };
