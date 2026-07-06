@@ -161,6 +161,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
     const time: f64 = @as(f64, @floatFromInt(time_ns)) / @as(f64, @floatFromInt(1_000_000_000));
     const stime: f64 = @as(f64, @floatFromInt(c_env.seq_time_ns.load(.acquire))) / @as(f64, @floatFromInt(1_000_000_000));
     try std.json.fmt(.{
+        .io = io_impl,
         .depth = bits_work + 1,
         .pwork = pwork,
         .swork = swork,
@@ -341,9 +342,7 @@ pub const CalcEnv = struct {
             const end = std.Io.Clock.awake.now(io);
             self.duration = start.durationTo(end);
         }
-        const depth0: u6 = @intCast(63 - @clz(blocks_to_read));
-        const more: u6 = if (blocks_to_read != (@as(u64, 1) << depth0)) 1 else 0;
-        const depth: u6 = depth0 + more;
+        const depth: u6 = @intCast(64 - @clz(blocks_to_read));
         const seed_tree: SeedTree = try .init(seed, depth);
         const in_flight: i64 = self.in_flight.fetchAdd(1, .monotonic);
         _ = self.max_in_flight.fetchMax(in_flight, .monotonic);
