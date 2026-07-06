@@ -33,7 +33,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
         \\                    this case)
         \\ --swork[=]<amount> Sets the sequential amount of work to do to <amount>.
         \\                    The work is the number of rng to xor together
-        \\                    (defaults to 1000)
+        \\                    (defaults to 100000)
         \\ --wait[=<ms>]      Waits for the requested number of seconds in the leaf work
         \\                    tasks
     ;
@@ -149,13 +149,11 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
         .wait_ms = wait_ms,
     };
     const res = try c_env.calc(io, allocator, seed orelse 0, pwork);
-    const bits_work0: u6 = @intCast(63 - @clz(pwork));
-    const bits_work: u6 = if (pwork == (@as(u64, 1) << bits_work0)) bits_work0 + 1 else bits_work0 + 2;
+    const bits_work: u6 =  @intCast(63 - @clz(pwork));
     const ncpu: u64 = try std.Thread.getCpuCount();
-    const bit_ncpu0: u6 = @intCast(63 - @clz(ncpu));
-    const bit_ncpu1: u6 = if ((@as(u64, 1) << bit_ncpu0) != ncpu) bit_ncpu0 + 2 else bit_ncpu0 + 1;
-    const ideal_in_flight_max: u64 = if (bits_work > bit_ncpu1)
-        (bits_work - bit_ncpu1 + 1) * ncpu
+    const bit_ncpu: u6 = @intCast(63 - @clz(ncpu));
+    const ideal_in_flight_max: u64 = if (bits_work > bit_ncpu)
+        (bits_work - bit_ncpu + 1) * ncpu
     else
         @min(pwork, 2 * ncpu);
     const core_tree: u64 = pwork >> 1;
