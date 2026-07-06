@@ -52,6 +52,13 @@ this almost completely (single wait loop for all tasks)
 * `parallel_speedup` is `sequential_leaf_time/time` i.e. how much the leaf tasks were
 parallelized (assuming that the leaf tasks are large enough and thus the time used by the
 subdividing tasks is negligible) and the main indicator one should look at
+* `actual_max_in_flight` number of in progress tasks, the single threaded execution will
+do a depth first traversal, and have `depth` in progress tasks (i.e. recursive
+calls occupying stack). To express more parallelism more in progress tasks will exist,
+given a number of CPUs there is an upper bound to the number of suspended tasks that still
+allow optimal parallelization. At the other extremum a breath first traversal will create
+needlessly many suspended tasks (and thus memory overhead), but allows full parallelism.
+This count does not distinguish between a recursive call and a really independent stack.
 
 # Selected Results
 
