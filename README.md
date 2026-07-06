@@ -117,11 +117,11 @@ Also in this case only Debug version works, the task is ~66ms
 
 # Appendix: Runs
 ## Pure wait - threaed
+```
 [clariden][fmohamed@clariden-ln001 src]$ zig run recursive_divide.zig -O ReleaseSafe -- --pwork=1  --swork=0 --wait
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 1,
@@ -138,11 +138,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 1.000071875,
   "parallel_speedup": 0.9999987520912508
 }]
+```
+
+```
 [clariden][fmohamed@clariden-ln001 src]$ zig run recursive_divide.zig -O ReleaseSafe -- --pwork=4  --swork=0 --wait
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 3,
@@ -159,11 +161,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 4.000249541,
   "parallel_speedup": 3.997438937685474
 }]
+```
+
+```
 [clariden][fmohamed@clariden-ln001 src]$ zig run recursive_divide.zig -O ReleaseSafe -- --pwork=16  --swork=0 --wait
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 5,
@@ -180,11 +184,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 16.000994073,
   "parallel_speedup": 15.951467700858892
 }]
+```
+
+```
 [clariden][fmohamed@clariden-ln001 src]$ zig run recursive_divide.zig -O ReleaseSafe -- --pwork=32  --swork=0 --wait
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 6,
@@ -201,12 +207,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 32.00198344,
   "parallel_speedup": 31.808873044104164
 }]
+```
 
+```
 [clariden][fmohamed@clariden-ln001 src]$ zig run recursive_divide.zig -O ReleaseSafe -- --pwork=64  --swork=0 --wait
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 7,
@@ -223,12 +230,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 64.003852281,
   "parallel_speedup": 63.23787573292621
 }]
+```
 
+```
 [clariden][fmohamed@clariden-ln001 src]$ srun -A csstaff --pty zig run recursive_divide.zig -O ReleaseSafe -- --pwork=256  --swork=0 --wait
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 9,
@@ -245,9 +253,10 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 256.013956692,
   "parallel_speedup": 42.476269092823756
 }]
+```
 
+```
 ./recursive_divide --pwork=1024 --swork=1 --wait
-
 [{
   "io": "threaded",
   "depth": 11,
@@ -264,11 +273,12 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 1024.051327506,
   "parallel_speedup": 78.5804776929968
 }]
+```
 
 ## Pure wait - evented - Debug
 
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O Debug recursive_divide.zig --  --pwork=1024 --swork=1 --wait --io=evented 2>/dev/null
-
 [{
   "io": "evented",
   "depth": 11,
@@ -285,16 +295,15 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 1034.476783999,
   "parallel_speedup": 632.0178448399541
 }]
-
-
+```
 
 # Work
 
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O ReleaseSafe recursive_divide.zig --  --pwork=1 --swork=10000000
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 1,
@@ -311,11 +320,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 0.009804595,
   "parallel_speedup": 0.9999673633070759
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O ReleaseSafe recursive_divide.zig --  --pwork=4 --swork=10000000
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 3,
@@ -332,11 +343,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 0.038976276,
   "parallel_speedup": 3.7373236959085054
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O ReleaseSafe recursive_divide.zig --  --pwork=16 --swork=10000000
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 5,
@@ -353,11 +366,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 0.156731385,
   "parallel_speedup": 12.31748196207824
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O ReleaseSafe recursive_divide.zig --  --pwork=64 --swork=10000000
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 7,
@@ -374,11 +389,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 0.62770098,
   "parallel_speedup": 29.120661320510674
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O ReleaseSafe recursive_divide.zig --  --pwork=256 --swork=10000000
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 9,
@@ -395,11 +412,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 2.511727916,
   "parallel_speedup": 63.03394344018108
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O ReleaseSafe recursive_divide.zig --  --pwork=1024 --swork=10000000
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 11,
@@ -416,12 +435,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 9.992756054,
   "parallel_speedup": 52.10068083743151
 }]
+```
 
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O ReleaseSafe recursive_divide.zig --  --pwork=4096 --swork=10000000
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 13,
@@ -438,11 +458,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 39.946148585,
   "parallel_speedup": 83.19648604684258
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O ReleaseSafe recursive_divide.zig --  --pwork=16384 --swork=10000000
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 15,
@@ -459,11 +481,13 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 159.829839918,
   "parallel_speedup": 92.5905191093667
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O ReleaseSafe recursive_divide.zig --  --pwork=65536 --swork=10000000
 anyzig: .minimum_zig_version '0.17.0-dev.1099+7db2ef610' pulled from '/users/fmohamed/zig/recursive_divide/build.zig.zon'
 anyzig: appdata '/users/fmohamed/.local/share/anyzig'
 anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cache/zig/p/N-V-__8AAHO6VxWHSGCSavQJDXzK21CgLPNQx_PZiKl5Lszl'
-
 [{
   "io": "threaded",
   "depth": 17,
@@ -480,9 +504,11 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 637.768756119,
   "parallel_speedup": 105.65829062585708
 }]
+```
 
 ### Evented
 
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O Debug recursive_divide.zig --  --pwork=1 --swork=10000000 --io=evented 2>/dev/null
 [{
   "io": "evented",
@@ -500,6 +526,9 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 0.084754519,
   "parallel_speedup": 0.9999818774009716
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O Debug recursive_divide.zig --  --pwork=4 --swork=10000000 --io=evented 2>/dev/null
 [{
   "io": "evented",
@@ -517,6 +546,9 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 0.33807094,
   "parallel_speedup": 1.6416464904680075
 }]
+```
+
+```
 [clariden][fmohamed@nid006922 src]$ zig run -O Debug recursive_divide.zig --  --pwork=16 --swork=10000000 --io=evented 2>/dev/null
 [{
   "io": "evented",
@@ -534,6 +566,9 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 1.325737373,
   "parallel_speedup": 4.949317398351924
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O Debug recursive_divide.zig --  --pwork=64 --swork=10000000 --io=evented 2>/dev/null
 [{
   "io": "evented",
@@ -551,6 +586,9 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 5.35822213,
   "parallel_speedup": 13.748798460510423
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O Debug recursive_divide.zig --  --pwork=256 --swork=10000000 --io=evented 2>/dev/null
 [{
   "io": "evented",
@@ -568,6 +606,9 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 21.451880596,
   "parallel_speedup": 41.41556748800238
 }]
+```
+
+```
 [clariden][fmohamed@nid007367 src]$ zig run -O Debug recursive_divide.zig --  --pwork=1024 --swork=10000000 --io=evented 2>/dev/null
 [{
   "io": "evented",
@@ -585,3 +626,4 @@ anyzig: zig '0.17.0-dev.1099+7db2ef610' already exists at '/users/fmohamed/.cach
   "sequential_leaf_time": 85.458523278,
   "parallel_speedup": 66.28952905262541
 }]
+```
