@@ -88,7 +88,7 @@ But definitely still bugs to iron out.
 in debug mode
 | pwork | time| speedup |
 |-------|-----|---------|
-| 1    | 1.64 | 632.02 |
+| 1024  | 1.64 | 632.02 |
 
 ## Work
 with `--swork=10000000` that corresponds to ~9ms with ReleaseSafe
