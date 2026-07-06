@@ -60,6 +60,16 @@ allow optimal parallelization. At the other extremum a breath first traversal wi
 needlessly many suspended tasks (and thus memory overhead), but allows full parallelism.
 This count does not distinguish between a recursive call and a really independent stack.
 
+## Build
+
+In the current version I also experimented with evented io (that uses io-uring on linux).
+Unfortunately there is an issue with that on 0.16, to work it around you have to:
+1. `git clone -b 0.16.x https://codeberg.org/ziglang/zig.git`
+2. `git cherry-pick 284ab0ad86310df45ecc3887cb6ed2f8cf507e45`
+3. add `--zig-lib-dir ~/zig/zig/lib <path-to-zig-checkout>/lib` the the build command:
+   `zig build  --zig-lib-dir ~/zig/zig/lib <path-to-zig-checkout>/lib ...`
+or update to zig master
+
 # Selected Results
 
 On node with 4 GH200, 288 logical CPUs

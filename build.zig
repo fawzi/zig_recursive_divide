@@ -21,6 +21,11 @@ pub fn build(b: *std.Build) void {
     // target and optimize options) will be listed when running `zig build --help`
     // in this directory.
 
+    const zio = b.dependency("zio", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
     // This creates a module, which represents a collection of source files alongside
     // some compilation options, such as optimization mode and linked system libraries.
     // Zig modules are the preferred way of making Zig code available to consumers.
@@ -83,6 +88,8 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    exe.root_module.addImport("zio", zio.module("zio"));
+
     // This declares intent for the executable to be installed into the
     // install prefix when running `zig build` (i.e. when executing the default
     // step). By default the install prefix is `zig-out/` but can be overridden
@@ -111,7 +118,10 @@ pub fn build(b: *std.Build) void {
 
     // This allows the user to pass arguments to the application in the build
     // command itself, like this: `zig build run -- arg1 arg2 etc`
-    run_cmd.addPassthruArgs();
+    //run_cmd.addPassthruArgs();
+    if (b.args) |args| {
+        run_cmd.addArgs(args);
+    }
 
     // Creates an executable that will run `test` blocks from the provided module.
     // Here `mod` needs to define a target, which is why earlier we made sure to

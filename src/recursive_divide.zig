@@ -2,11 +2,20 @@ const std = @import("std");
 const Io = std.Io;
 const builtin = @import("builtin");
 const log = std.log;
+const zio = @import("zio");
 
 fn enumName(T: type, value: []const u8) ?T {
-    inline for (@typeInfo(T).@"enum".field_names) |enumField| {
-        if (std.mem.eql(u8, value, enumField)) {
-            return @field(T, enumField);
+    if (builtin.zig_version.minor == 16) {
+        inline for (@typeInfo(T).@"enum".fields) |enumField| {
+            if (std.mem.eql(u8, value, enumField.name)) {
+                return @field(T, enumField.name);
+            }
+        }
+    } else {
+        inline for (@typeInfo(T).@"enum".field_names) |enumField| {
+            if (std.mem.eql(u8, value, enumField)) {
+                return @field(T, enumField);
+            }
         }
     }
     return null;
@@ -25,7 +34,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
     // Accessing command line arguments:
     const help =
         \\ -h --help          print this description
-        \\ --io[=]<impl>      Uses the given io implementation (threaded|evented)
+        \\ --io[=]<impl>      Uses the given io implementation (threaded|evented|zio)
         \\ --seed[=]<seed>    Uses the given seed for the random number gereators
         \\ --pwork[=]<amount> Sets the amount of parallel work to do to <amount>. The work
         \\                    is performed subdividing with a divide and conquer schema
@@ -107,6 +116,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
     }
     var threaded: std.Io.Threaded = undefined;
     var evented: std.Io.Evented = undefined;
+    var rt: *zio.Runtime = undefined;
     const io = switch (io_impl) {
         .threaded => blk1: {
             threaded = .init(allocator, .{
@@ -123,6 +133,10 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
             });
             break :blk2 evented.io();
         },
+        .zio => blk3: {
+            rt = try zio.Runtime.init(std.heap.smp_allocator, .{});
+            break :blk3 rt.io();
+        },
     };
     defer switch (io_impl) {
         .threaded => threaded.deinit(),
@@ -132,6 +146,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
             // https://codeberg.org/ziglang/zig/commit/4d5721214f31684e3bed3624878d8903fabe8e39
             else => evented.deinit(),
         },
+        .zio => rt.deinit(),
     };
     var buf1: [256]u8 = undefined;
     var stderr_w = Io.File.stderr().writer(io, &buf1);
@@ -184,6 +199,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
 pub const IoImplementation = enum {
     threaded,
     evented,
+    zio,
 };
 
 /// Builds a unique random sequence that can be easily evaluated in random order
