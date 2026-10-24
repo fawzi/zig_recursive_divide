@@ -2,7 +2,7 @@ const std = @import("std");
 const Io = std.Io;
 const builtin = @import("builtin");
 const log = std.log;
-const zio = @import("zio");
+// const zio = @import("zio");
 
 fn enumName(T: type, value: []const u8) ?T {
     if (builtin.zig_version.minor == 16) {
@@ -26,7 +26,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
 
     var debug_allocator = std.heap.DebugAllocator(.{}).init;
     defer _ = debug_allocator.deinit();
-    const allocator = if (builtin.mode != .ReleaseFast) debug_allocator.allocator() else std.heap.smp_allocator;
+    const allocator = if (builtin.mode != .fast) debug_allocator.allocator() else std.heap.smp_allocator;
     var arena_allocator = std.heap.ArenaAllocator.init(allocator);
     defer arena_allocator.deinit();
     const arena: std.mem.Allocator = arena_allocator.allocator();
@@ -116,7 +116,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
     }
     var threaded: std.Io.Threaded = undefined;
     var evented: std.Io.Evented = undefined;
-    var rt: *zio.Runtime = undefined;
+    // var rt: *zio.Runtime = undefined;
     const io = switch (io_impl) {
         .threaded => blk1: {
             threaded = .init(allocator, .{
@@ -133,20 +133,20 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
             });
             break :blk2 evented.io();
         },
-        .zio => blk3: {
-            rt = try zio.Runtime.init(std.heap.smp_allocator, .{});
-            break :blk3 rt.io();
-        },
+        // .zio => blk3: {
+        //     rt = try zio.Runtime.init(std.heap.smp_allocator, .{});
+        //     break :blk3 rt.io();
+        // },
     };
     defer switch (io_impl) {
         .threaded => threaded.deinit(),
         .evented => switch (builtin.os.tag) {
             .driverkit, .ios, .maccatalyst, .macos, .tvos, .visionos, .watchos, .linux => {},
             // deint triggers a compilation bug on macos with zig 0.16.0 see
-            // https://codeberg.org/ziglang/zig/commit/4d5721214f31684e3bed3624878d8903fabe8e39
+            // https://codeberg.org/ziglang/zig/commit/4d5721214f31684e3bed3624878d8903fabe8e39c
             else => evented.deinit(),
         },
-        .zio => rt.deinit(),
+        // .zio => rt.deinit(),
     };
     var buf1: [256]u8 = undefined;
     var stderr_w = Io.File.stderr().writer(io, &buf1);
@@ -164,7 +164,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
         .wait_ms = wait_ms,
     };
     const res = try c_env.calc(io, allocator, seed orelse 0, pwork);
-    const bits_work: u6 =  @intCast(63 - @clz(pwork));
+    const bits_work: u6 = @intCast(63 - @clz(pwork));
     const ncpu: u64 = try std.Thread.getCpuCount();
     const bit_ncpu: u6 = @intCast(63 - @clz(ncpu));
     const ideal_in_flight_max: u64 = if (bits_work > bit_ncpu)
@@ -199,7 +199,7 @@ pub fn main(minimal: std.process.Init.Minimal) !void {
 pub const IoImplementation = enum {
     threaded,
     evented,
-    zio,
+    // zio,
 };
 
 /// Builds a unique random sequence that can be easily evaluated in random order

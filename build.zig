@@ -21,10 +21,10 @@ pub fn build(b: *std.Build) void {
     // target and optimize options) will be listed when running `zig build --help`
     // in this directory.
 
-    const zio = b.dependency("zio", .{
-        .target = target,
-        .optimize = optimize,
-    });
+    // const zio = b.dependency("zio", .{
+    //     .target = target,
+    //     .optimize = optimize,
+    // });
 
     // This creates a module, which represents a collection of source files alongside
     // some compilation options, such as optimization mode and linked system libraries.
@@ -84,7 +84,7 @@ pub fn build(b: *std.Build) void {
                 // can be extremely useful in case of collisions (which can happen
                 // importing modules from different packages).
                 //.{ .name = "recursive_divide", .module = mod },
-                .{ .name = "zio", .module = zio.module("zio")}
+                //.{ .name = "zio", .module = zio.module("zio") }
             },
         }),
     });
@@ -119,10 +119,7 @@ pub fn build(b: *std.Build) void {
 
     // This allows the user to pass arguments to the application in the build
     // command itself, like this: `zig build run -- arg1 arg2 etc`
-    //run_cmd.addPassthruArgs();
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
+    run_cmd.addPassthruArgs();
 
     //// Creates an executable that will run `test` blocks from the provided module.
     //// Here `mod` needs to define a target, which is why earlier we made sure to
